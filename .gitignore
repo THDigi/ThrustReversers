@@ -308,6 +308,17 @@ Models/*.fbx
 Models/*.hkt
 Models/*.log
 Models/*.xml
+
+Models/SmallShip/*.fbx
+Models/SmallShip/*.hkt
+Models/SmallShip/*.log
+Models/SmallShip/*.xml
+
+Models/LargeShip/*.fbx
+Models/LargeShip/*.hkt
+Models/LargeShip/*.log
+Models/LargeShip/*.xml
+
 *.blend1
 *.blend2
 *.blend3
