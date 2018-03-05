@@ -2,18 +2,63 @@
 <Definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <TransparentMaterials>
     <TransparentMaterial>
-	  <Id>
+      <Id>
         <TypeId>TransparentMaterialDefinition</TypeId>
         <SubtypeId>JetThrust</SubtypeId>
       </Id>			
       <AlphaMistingEnable>false</AlphaMistingEnable>
       <AlphaSaturation>1</AlphaSaturation>
       <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
-      <Emissivity>0</Emissivity>
       <IgnoreDepth>false</IgnoreDepth>
       <NeedSort>true</NeedSort>
-      <SoftParticleDistanceScale>1000</SoftParticleDistanceScale>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
       <Texture>Textures\JetThrust.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <UVOffset>
+        <X>0</X>
+        <Y>0</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+    </TransparentMaterial>
+    
+    <TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>JetThrustPoint</SubtypeId>
+      </Id>			
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <NeedSort>true</NeedSort>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\JetThrustPoint.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <UVOffset>
+        <X>0</X>
+        <Y>0</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+    </TransparentMaterial>
+    
+    <TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>JetCone</SubtypeId>
+      </Id>			
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <NeedSort>false</NeedSort>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\JetCone.dds</Texture>
       <UseAtlas>false</UseAtlas>
       <UVOffset>
         <X>0</X>
