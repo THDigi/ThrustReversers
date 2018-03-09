@@ -39,6 +39,7 @@
       <BuildTimeSeconds>12</BuildTimeSeconds>
       <PowerConsumptionIdle>0.000001</PowerConsumptionIdle>
       <PowerConsumptionMoving>0.001</PowerConsumptionMoving>
+      <ResourceSinkGroup>Defense</ResourceSinkGroup>
       <DamageEffectId>212</DamageEffectId>
       <Subparts>
         <SubpartDefinition>
@@ -119,6 +120,7 @@
       <BuildTimeSeconds>12</BuildTimeSeconds>
       <PowerConsumptionIdle>0.000001</PowerConsumptionIdle>
       <PowerConsumptionMoving>0.001</PowerConsumptionMoving>
+      <ResourceSinkGroup>Defense</ResourceSinkGroup>
       <DamageEffectId>212</DamageEffectId>
       <Subparts>
         <SubpartDefinition>
@@ -201,6 +203,7 @@
       <BuildTimeSeconds>12</BuildTimeSeconds>
       <PowerConsumptionIdle>0.000001</PowerConsumptionIdle>
       <PowerConsumptionMoving>0.001</PowerConsumptionMoving>
+      <ResourceSinkGroup>Defense</ResourceSinkGroup>
       <DamageEffectId>212</DamageEffectId>
       <Subparts>
         <SubpartDefinition>
@@ -275,6 +278,7 @@
       <BuildTimeSeconds>12</BuildTimeSeconds>
       <PowerConsumptionIdle>0.000001</PowerConsumptionIdle>
       <PowerConsumptionMoving>0.001</PowerConsumptionMoving>
+      <ResourceSinkGroup>Defense</ResourceSinkGroup>
       <DamageEffectId>212</DamageEffectId>
       <Subparts>
         <SubpartDefinition>
