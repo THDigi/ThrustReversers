@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Definitions;
 using Sandbox.Game.Entities;
@@ -45,6 +46,27 @@ namespace Digi.ThrustReversers
         float maxViewDistSq;
 
         const float JET_FLAME_SCALE_MUL = 1.75f;
+
+        List<FlameInfo> flames;
+
+        struct FlameInfo
+        {
+            public readonly Vector3 LocalFrom;
+            public readonly Vector3 LocalTo;
+            public readonly float Radius;
+            public readonly Vector3 Direction;
+            public readonly float Height;
+
+            public FlameInfo(Vector3 localFrom, Vector3 localTo, float radius)
+            {
+                LocalFrom = localFrom;
+                LocalTo = localTo;
+                Radius = radius;
+
+                Direction = (LocalTo - LocalFrom);
+                Height = Direction.Normalize();
+            }
+        }
 
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
@@ -128,11 +150,43 @@ namespace Digi.ThrustReversers
                 lightJet = MyLights.AddLight();
                 lightJet.Start("ThrustJetLight");
                 lightJet.LightOn = false;
+
+                GetFlameInfo();
             }
             catch(Exception e)
             {
                 Log.Error(e);
             }
+        }
+
+        private void GetFlameInfo()
+        {
+            // HACK copied from MyThrust's ThrustDamageAsync(), UpdateThrustFlame(), GetDamageCapsuleLine()
+            var thrustDef = thrust.BlockDefinition;
+            var thrustLength = /* CurrentStrength * */ 10f * /* MyUtils.GetRandomFloat(0.6f, 1f) * */ thrustDef.FlameLengthScale;
+
+            flames = new List<FlameInfo>();
+
+            var dummies = ThrustReversersMod.Instance.Dummies;
+            dummies.Clear();
+
+            Entity.Model.GetDummies(dummies);
+
+            foreach(var dummy in dummies.Values)
+            {
+                if(dummy.Name.StartsWith("thruster_flame", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var startPosition = dummy.Matrix.Translation;
+                    var direction = Vector3.Normalize(dummy.Matrix.Forward);
+                    var radius = Math.Max(dummy.Matrix.Scale.X, dummy.Matrix.Scale.Y) * 0.5f;
+                    var length = thrustLength * radius * thrustDef.FlameDamageLengthScale - radius;
+                    var endPosition = startPosition + direction * length;
+
+                    flames.Add(new FlameInfo(startPosition, endPosition, radius));
+                }
+            }
+
+            dummies.Clear();
         }
 
         public override void Close()
@@ -199,12 +253,12 @@ namespace Digi.ThrustReversers
                 var gridScale = thrust.CubeGrid.GridScale;
                 var material = ThrustReversersMod.Instance.THRUST_MATERIAL;
 
-                for(int i = 0; i < thrust.Flames.Count; ++i)
+                for(int i = 0; i < flames.Count; ++i)
                 {
-                    var flame = thrust.Flames[i];
+                    var flame = flames[i];
 
                     Vector3D direction = Vector3D.TransformNormal((Vector3D)flame.Direction, m);
-                    Vector3D position = Vector3D.Transform((Vector3D)flame.Position, m);
+                    Vector3D position = Vector3D.Transform((Vector3D)flame.LocalFrom, m);
 
                     var trailPos = position + (direction * trailOffset);
 
