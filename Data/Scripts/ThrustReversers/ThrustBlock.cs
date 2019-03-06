@@ -11,6 +11,8 @@ using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
 
+using BlendType = VRageRender.MyBillboard.BlendTypeEnum;
+
 namespace Digi.ThrustReversers
 {
     [MyEntityComponentDescriptor(typeof(MyObjectBuilder_Thrust), false,
@@ -20,6 +22,9 @@ namespace Digi.ThrustReversers
                                  "SmallBlockSmallAtmosphericThrust")]
     public class ThrustBlock : MyGameLogicComponent
     {
+        const float JET_FLAME_SCALE_MUL = 1.75f;
+        const BlendType BLEND_TYPE = BlendType.SDR;
+
         public ThrustReverserBlock Reverser;
 
         MyThrust thrust;
@@ -41,8 +46,6 @@ namespace Digi.ThrustReversers
         float pointScaleMul;
 
         float maxViewDistSq;
-
-        const float JET_FLAME_SCALE_MUL = 1.75f;
 
         List<FlameInfo> flames;
 
@@ -281,16 +284,16 @@ namespace Digi.ThrustReversers
                         pointsAlpha *= (dot - POINTS_ANGLE_END) / (POINTS_ANGLE_START - POINTS_ANGLE_END);
 
                     if(trailAlpha > 0)
-                        MyTransparentGeometry.AddLineBillboard(material, trailColor * trailAlpha, trailPos, direction, thrustLerpLength, JET_FLAME_SCALE_MUL * thrustLerpThick);
+                        MyTransparentGeometry.AddLineBillboard(material, trailColor * trailAlpha, trailPos, direction, thrustLerpLength, JET_FLAME_SCALE_MUL * thrustLerpThick, blendType: BLEND_TYPE);
 
                     if(pointsAlpha > 0)
-                        MyTransparentGeometry.AddBillboardOriented(ThrustReversersMod.Instance.POINT_MATERIAL, trailColor * pointsAlpha, position + (direction * pointOffset), m.Left, m.Up, (thickness * pointScaleMul));
+                        MyTransparentGeometry.AddBillboardOriented(ThrustReversersMod.Instance.POINT_MATERIAL, trailColor * pointsAlpha, position + (direction * pointOffset), m.Left, m.Up, (thickness * pointScaleMul), blendType: BLEND_TYPE);
 
                     var coneHeightFinal = coneHeight * (paused ? 1 : MyUtils.GetRandomFloat(0.9f, 1.1f));
                     var coneMatrix = MatrixD.CreateWorld(position + (direction * (coneOffset + coneHeightFinal)), -direction, m.Up);
                     var coneColor = new Color(insideColor);
 
-                    MySimpleObjectDraw.DrawTransparentCone(ref coneMatrix, coneRadius, coneHeightFinal, ref coneColor, 16, ThrustReversersMod.Instance.CONE_MATERIAL);
+                    DrawTransparentCone(ref coneMatrix, coneRadius, coneHeightFinal, ref coneColor, 16, ThrustReversersMod.Instance.CONE_MATERIAL, blendType: BLEND_TYPE);
                 }
 
                 // TODO reflected flames
@@ -341,6 +344,33 @@ namespace Digi.ThrustReversers
             }
 
             return true; // keep in list
+        }
+
+        // HACK copied to add blendType.
+        private static void DrawTransparentCone(ref MatrixD worldMatrix, float radius, float height, ref Color color, int wireDivideRatio, MyStringId faceMaterial, int customViewProjectionMatrix = -1, BlendType blendType = BlendType.Standard)
+        {
+            DrawTransparentCone(worldMatrix.Translation, worldMatrix.Forward * height, worldMatrix.Up * radius, color, wireDivideRatio, faceMaterial, customViewProjectionMatrix, blendType);
+        }
+
+        private static void DrawTransparentCone(Vector3D apexPosition, Vector3 directionVector, Vector3 baseVector, Color color, int wireDivideRatio, MyStringId material, int customViewProjectionMatrix = -1, BlendType blendType = BlendType.Standard)
+        {
+            Vector3 axis = directionVector;
+            axis.Normalize();
+            float num = (float)(MathHelperD.TwoPi / (double)wireDivideRatio);
+
+            for(int i = 0; i < wireDivideRatio; i++)
+            {
+                float angle = (float)i * num;
+                float angle2 = (float)(i + 1) * num;
+                Vector3D point = apexPosition + directionVector + Vector3.Transform(baseVector, Matrix.CreateFromAxisAngle(axis, angle));
+                Vector3D point2 = apexPosition + directionVector + Vector3.Transform(baseVector, Matrix.CreateFromAxisAngle(axis, angle2));
+                MyQuadD myQuadD;
+                myQuadD.Point0 = point;
+                myQuadD.Point1 = point2;
+                myQuadD.Point2 = apexPosition;
+                myQuadD.Point3 = apexPosition;
+                MyTransparentGeometry.AddQuad(material, ref myQuadD, color, ref Vector3D.Zero, -1, blendType, null);
+            }
         }
     }
 }
