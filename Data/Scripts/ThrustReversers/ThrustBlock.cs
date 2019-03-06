@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Common.ObjectBuilders;
-using Sandbox.Definitions;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Lights;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
-using VRage.Game.ModAPI;
-using VRage.Input;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
 using VRage.Utils;
@@ -70,7 +67,6 @@ namespace Digi.ThrustReversers
 
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
-            thrust = (MyThrust)Entity;
             NeedsUpdate = MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
         }
 
@@ -78,12 +74,16 @@ namespace Digi.ThrustReversers
         {
             try
             {
-                var grid = thrust.CubeGrid;
-
-                if(grid.Physics == null || !grid.Physics.Enabled)
+                if(ThrustReversersMod.Instance == null || !ThrustReversersMod.Instance.IsPlayer)
                     return;
 
-                ThrustReversersMod.Instance.thrustLogicDraw.Add(this);
+                thrust = (MyThrust)Entity;
+                var grid = thrust.CubeGrid;
+
+                if(grid?.Physics == null || !grid.Physics.Enabled)
+                    return;
+
+                ThrustReversersMod.Instance.ThrustLogicDraw.Add(this);
 
                 switch(thrust.BlockDefinition.Id.SubtypeName)
                 {

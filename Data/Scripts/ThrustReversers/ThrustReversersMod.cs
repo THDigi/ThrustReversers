@@ -11,20 +11,10 @@ using VRageMath;
 
 namespace Digi.ThrustReversers
 {
-    [MySessionComponentDescriptor(MyUpdateOrder.AfterSimulation)]
+    [MySessionComponentDescriptor(MyUpdateOrder.NoUpdate)]
     public class ThrustReversersMod : MySessionComponentBase
     {
-        public static ThrustReversersMod Instance = null;
-
-        public bool init = false;
-        public bool isPlayer = false;
-        public short skip = 0;
-
-        public List<ThrustBlock> thrustLogicDraw = new List<ThrustBlock>();
-
         private const string MOD_NAME = "Reverse Thrusters";
-        public const ulong MOD_WORKSHOP_ID = 570950770;
-        private const string MOD_FOLDER = "ReverseThrusters";
 
         public bool RealisticThrustersInstalled = false;
         public const ulong REALISTIC_THRUSTERS_MOD_ID = 575893643;
@@ -34,6 +24,12 @@ namespace Digi.ThrustReversers
         public readonly MyStringId POINT_MATERIAL = MyStringId.GetOrCompute("JetThrustPoint");
         public readonly MyStringId CONE_MATERIAL = MyStringId.GetOrCompute("JetCone");
 
+        public static ThrustReversersMod Instance = null;
+
+        public bool IsInit = false;
+        public bool IsPlayer = false;
+        public List<ThrustBlock> ThrustLogicDraw = new List<ThrustBlock>();
+        public readonly Dictionary<string, IMyModelDummy> Dummies = new Dictionary<string, IMyModelDummy>();
         public HashSet<string> LinkableThrusters = new HashSet<string>()
         {
             "LargeBlockLargeAtmosphericThrust",
@@ -42,12 +38,13 @@ namespace Digi.ThrustReversers
             "SmallBlockSmallAtmosphericThrust",
         };
 
-        public readonly Dictionary<string, IMyModelDummy> Dummies = new Dictionary<string, IMyModelDummy>();
-
         public override void LoadData()
         {
             Instance = this;
-            Log.SetUp(MOD_NAME, MOD_WORKSHOP_ID, MOD_FOLDER);
+            Log.ModName = MOD_NAME;
+            Log.AutoClose = false;
+
+            IsPlayer = !(MyAPIGateway.Session.IsServer && MyAPIGateway.Utilities.IsDedicated);
 
             try
             {
@@ -83,11 +80,9 @@ namespace Digi.ThrustReversers
             }
         }
 
-        public void Init()
+        public override void BeforeStart()
         {
-            Log.Init();
-            init = true;
-            isPlayer = !(MyAPIGateway.Session.IsServer && MyAPIGateway.Utilities.IsDedicated);
+            IsInit = true;
 
             var mods = MyAPIGateway.Session.Mods;
 
@@ -100,50 +95,30 @@ namespace Digi.ThrustReversers
                     break;
                 }
             }
-
-            MyAPIGateway.Utilities.InvokeOnGameThread(() => SetUpdateOrder(MyUpdateOrder.NoUpdate)); // stop updating this comp
         }
 
         protected override void UnloadData()
         {
-            init = false;
+            IsInit = false;
             RealisticThrustersInstalled = false;
-            thrustLogicDraw.Clear();
+            ThrustLogicDraw?.Clear();
 
             Log.Close();
             Instance = null;
-        }
-
-        public override void UpdateAfterSimulation()
-        {
-            try
-            {
-                if(!init)
-                {
-                    if(MyAPIGateway.Session == null)
-                        return;
-
-                    Init();
-                }
-            }
-            catch(Exception e)
-            {
-                Log.Error(e);
-            }
         }
 
         public override void Draw()
         {
             try
             {
-                if(!isPlayer)
+                if(!IsPlayer)
                     return;
 
-                for(int i = thrustLogicDraw.Count - 1; i >= 0; --i)
+                for(int i = ThrustLogicDraw.Count - 1; i >= 0; --i)
                 {
-                    if(!thrustLogicDraw[i].Draw())
+                    if(!ThrustLogicDraw[i].Draw())
                     {
-                        thrustLogicDraw.RemoveAtFast(i);
+                        ThrustLogicDraw.RemoveAtFast(i);
                     }
                 }
             }
