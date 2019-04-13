@@ -47,6 +47,7 @@ namespace Digi.ThrustReversers
 
         float maxViewDistSq;
 
+        bool firstFunctional = true;
         List<FlameInfo> flames;
 
         struct FlameInfo
@@ -153,8 +154,6 @@ namespace Digi.ThrustReversers
                 lightJet = MyLights.AddLight();
                 lightJet.Start("ThrustJetLight");
                 lightJet.LightOn = false;
-
-                GetFlameInfo();
             }
             catch(Exception e)
             {
@@ -218,6 +217,12 @@ namespace Digi.ThrustReversers
 
             if(thrust.IsWorking && Vector3D.DistanceSquared(cm.Translation, thrust.WorldMatrix.Translation) <= maxViewDistSq)
             {
+                if(firstFunctional)
+                {
+                    firstFunctional = false;
+                    GetFlameInfo(); // needed here because it relies on getting dummies from the main model
+                }
+
                 float ClosedMultiplier = 1f;
 
                 if(Reverser != null)
