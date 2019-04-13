@@ -210,7 +210,7 @@ namespace Digi.ThrustReversers
 
         public bool Draw()
         {
-            if(thrust.Closed)
+            if(thrust.MarkedForClose || thrust.Closed)
                 return false; // remove from list
 
             var cm = MyAPIGateway.Session.Camera.WorldMatrix;
@@ -227,7 +227,7 @@ namespace Digi.ThrustReversers
 
                 if(Reverser != null)
                 {
-                    if(Reverser.Closed)
+                    if(Reverser.MarkedForClose || Reverser.Closed)
                     {
                         Reverser = null;
                     }
