@@ -27,7 +27,7 @@ namespace Digi.ThrustReversers
         public override void Init(MyObjectBuilder_EntityBase objectBuilder)
         {
             block = (MyAdvancedDoor)Entity;
-            def = (MyAdvancedDoorDefinition)block.BlockDefinition;
+            def = (MyAdvancedDoorDefinition)((MyCubeBlock)block).BlockDefinition;
             NeedsUpdate = MyEntityUpdateEnum.EACH_FRAME;
         }
 
