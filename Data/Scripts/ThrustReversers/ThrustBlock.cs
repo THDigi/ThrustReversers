@@ -6,6 +6,7 @@ using Sandbox.Game.Lights;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
+using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
 using VRage.Utils;
@@ -82,7 +83,7 @@ namespace Digi.ThrustReversers
                     return;
 
                 thrust = (MyThrust)Entity;
-                var grid = thrust.CubeGrid;
+                MyCubeGrid grid = thrust.CubeGrid;
 
                 if(grid?.Physics == null || !grid.Physics.Enabled)
                     return;
@@ -164,25 +165,25 @@ namespace Digi.ThrustReversers
         private void GetFlameInfo()
         {
             // HACK copied from MyThrust's ThrustDamageAsync(), UpdateThrustFlame(), GetDamageCapsuleLine()
-            var thrustDef = thrust.BlockDefinition;
-            var thrustLength = /* CurrentStrength * */ 10f * /* MyUtils.GetRandomFloat(0.6f, 1f) * */ thrustDef.FlameLengthScale;
+            Sandbox.Definitions.MyThrustDefinition thrustDef = thrust.BlockDefinition;
+            float thrustLength = /* CurrentStrength * */ 10f * /* MyUtils.GetRandomFloat(0.6f, 1f) * */ thrustDef.FlameLengthScale;
 
             flames = new List<FlameInfo>();
 
-            var dummies = ThrustReversersMod.Instance.Dummies;
+            Dictionary<string, IMyModelDummy> dummies = ThrustReversersMod.Instance.Dummies;
             dummies.Clear();
 
             Entity.Model.GetDummies(dummies);
 
-            foreach(var dummy in dummies.Values)
+            foreach(IMyModelDummy dummy in dummies.Values)
             {
                 if(dummy.Name.StartsWith("thruster_flame", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var startPosition = dummy.Matrix.Translation;
-                    var direction = Vector3.Normalize(dummy.Matrix.Forward);
-                    var radius = Math.Max(dummy.Matrix.Scale.X, dummy.Matrix.Scale.Y) * 0.5f;
-                    var length = thrustLength * radius * thrustDef.FlameDamageLengthScale - radius;
-                    var endPosition = startPosition + direction * length;
+                    Vector3 startPosition = dummy.Matrix.Translation;
+                    Vector3 direction = Vector3.Normalize(dummy.Matrix.Forward);
+                    float radius = Math.Max(dummy.Matrix.Scale.X, dummy.Matrix.Scale.Y) * 0.5f;
+                    float length = thrustLength * radius * thrustDef.FlameDamageLengthScale - radius;
+                    Vector3 endPosition = startPosition + direction * length;
 
                     flames.Add(new FlameInfo(startPosition, endPosition, radius));
                 }
@@ -213,7 +214,7 @@ namespace Digi.ThrustReversers
             if(thrust.MarkedForClose || thrust.Closed)
                 return false; // remove from list
 
-            var cm = MyAPIGateway.Session.Camera.WorldMatrix;
+            MatrixD cm = MyAPIGateway.Session.Camera.WorldMatrix;
 
             if(thrust.IsWorking && Vector3D.DistanceSquared(cm.Translation, thrust.WorldMatrix.Translation) <= maxViewDistSq)
             {
@@ -237,41 +238,41 @@ namespace Digi.ThrustReversers
                     }
                 }
 
-                var paused = MyParticlesManager.Paused;
-                var def = thrust.BlockDefinition;
-                var amount = Math.Min(thrust.CurrentStrength * 2, 1);
+                bool paused = MyParticlesManager.Paused;
+                Sandbox.Definitions.MyThrustDefinition def = thrust.BlockDefinition;
+                float amount = Math.Min(thrust.CurrentStrength * 2, 1);
 
                 if(!paused)
                 {
-                    var lengthTarget = Math.Max(amount, 0.25f) * length * 3f * MyUtils.GetRandomFloat(0.9f, 1.1f) * ClosedMultiplier;
+                    float lengthTarget = Math.Max(amount, 0.25f) * length * 3f * MyUtils.GetRandomFloat(0.9f, 1.1f) * ClosedMultiplier;
                     thrustLerpLength = lengthTarget; // MathHelper.Lerp(thrustLerpLength, lengthTarget, 0.3f);
 
-                    var thickTarget = thickness * MyUtils.GetRandomFloat(0.9f, 1.1f);
+                    float thickTarget = thickness * MyUtils.GetRandomFloat(0.9f, 1.1f);
                     thrustLerpThick = thickTarget; // MathHelper.Lerp(thrustLerpThick, thickTarget, 0.2f);
 
                     thurstLerpColor = MathHelper.Lerp(thurstLerpColor, amount, 0.25f);
                 }
 
                 //var trailColor = Vector4.Lerp(new Vector4(1f, 0.3f, 0f, 1f) * 0.25f, new Vector4(0.5f, 0.6f, 1f, 1f) * 0.75f, thurstLerpColor);
-                var trailColor = Vector4.Lerp(new Vector4(0.5f, 0.6f, 1f, 1f) * 0.25f, new Vector4(1f, 0.3f, 0f, 1f), thurstLerpColor);
-                var insideColor = trailColor; // Vector4.Lerp(new Vector4(1f, 0.3f, 0f, 1f) * 0.5f, new Vector4(1f, 1f, 0.9f, 1f), thurstLerpColor);
-                var lightColor = insideColor; // Vector4.Lerp(new Vector4(1f, 0.3f, 0f, 1f), new Vector4(1f, 0.5f, 0.25f, 1f), thurstLerpColor);
+                Vector4 trailColor = Vector4.Lerp(new Vector4(0.5f, 0.6f, 1f, 1f) * 0.25f, new Vector4(1f, 0.3f, 0f, 1f), thurstLerpColor);
+                Vector4 insideColor = trailColor; // Vector4.Lerp(new Vector4(1f, 0.3f, 0f, 1f) * 0.5f, new Vector4(1f, 1f, 0.9f, 1f), thurstLerpColor);
+                Vector4 lightColor = insideColor; // Vector4.Lerp(new Vector4(1f, 0.3f, 0f, 1f), new Vector4(1f, 0.5f, 0.25f, 1f), thurstLerpColor);
 
-                var m = thrust.WorldMatrix;
-                var gridScale = thrust.CubeGrid.GridScale;
-                var material = ThrustReversersMod.Instance.THRUST_MATERIAL;
+                MatrixD m = thrust.WorldMatrix;
+                float gridScale = thrust.CubeGrid.GridScale;
+                MyStringId material = ThrustReversersMod.Instance.THRUST_MATERIAL;
 
                 for(int i = 0; i < flames.Count; ++i)
                 {
-                    var flame = flames[i];
+                    FlameInfo flame = flames[i];
 
                     Vector3D direction = Vector3D.TransformNormal((Vector3D)flame.Direction, m);
                     Vector3D position = Vector3D.Transform((Vector3D)flame.LocalFrom, m);
 
-                    var trailPos = position + (direction * trailOffset);
+                    Vector3D trailPos = position + (direction * trailOffset);
 
-                    var dirToCam = Vector3.Normalize(cm.Translation - position);
-                    var dot = Vector3.Dot(dirToCam, direction);
+                    Vector3 dirToCam = Vector3.Normalize(cm.Translation - position);
+                    float dot = Vector3.Dot(dirToCam, direction);
 
                     float trailAlpha = 0.5f;
                     float pointsAlpha = 2f;
@@ -294,9 +295,9 @@ namespace Digi.ThrustReversers
                     if(pointsAlpha > 0)
                         MyTransparentGeometry.AddBillboardOriented(ThrustReversersMod.Instance.POINT_MATERIAL, trailColor * pointsAlpha, position + (direction * pointOffset), m.Left, m.Up, (thickness * pointScaleMul), blendType: BLEND_TYPE);
 
-                    var coneHeightFinal = coneHeight * (paused ? 1 : MyUtils.GetRandomFloat(0.9f, 1.1f));
-                    var coneMatrix = MatrixD.CreateWorld(position + (direction * (coneOffset + coneHeightFinal)), -direction, m.Up);
-                    var coneColor = new Color(insideColor);
+                    float coneHeightFinal = coneHeight * (paused ? 1 : MyUtils.GetRandomFloat(0.9f, 1.1f));
+                    MatrixD coneMatrix = MatrixD.CreateWorld(position + (direction * (coneOffset + coneHeightFinal)), -direction, m.Up);
+                    Color coneColor = new Color(insideColor);
 
                     DrawTransparentCone(ref coneMatrix, coneRadius, coneHeightFinal, ref coneColor, 16, ThrustReversersMod.Instance.CONE_MATERIAL, blendType: BLEND_TYPE);
                 }

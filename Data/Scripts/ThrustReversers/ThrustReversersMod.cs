@@ -84,9 +84,9 @@ namespace Digi.ThrustReversers
         {
             IsInit = true;
 
-            var mods = MyAPIGateway.Session.Mods;
+            List<MyObjectBuilder_Checkpoint.ModItem> mods = MyAPIGateway.Session.Mods;
 
-            foreach(var mod in mods)
+            foreach(MyObjectBuilder_Checkpoint.ModItem mod in mods)
             {
                 if(mod.PublishedFileId == REALISTIC_THRUSTERS_MOD_ID || (mod.PublishedFileId == 0 && mod.Name == REALISTIC_THRUSTERS_LOCAL))
                 {
@@ -135,11 +135,11 @@ namespace Digi.ThrustReversers
             if(MyDefinitionManager.Static.TryGetCubeBlockDefinition(new MyDefinitionId(typeof(MyObjectBuilder_Thrust), MyStringHash.GetOrCompute(subtypeId)), out def))
             {
                 // HACK since there's no way to edit the flame properly, this hides it and the mod draws its own
-                var thrustDef = (MyThrustDefinition)def;
+                MyThrustDefinition thrustDef = (MyThrustDefinition)def;
                 thrustDef.FlameFullColor = Vector4.Zero;
                 thrustDef.FlameIdleColor = Vector4.Zero;
 
-                var mp = def.MountPoints;
+                MyCubeBlockDefinition.MountPoint[] mp = def.MountPoints;
                 def.MountPoints = new MyCubeBlockDefinition.MountPoint[mp.Length + addMPObjects.Length];
 
                 for(int i = 0; i < mp.Length; i++)
@@ -149,7 +149,7 @@ namespace Digi.ThrustReversers
 
                 for(int i = 0; i < addMPObjects.Length; ++i)
                 {
-                    var mpObj = addMPObjects[i];
+                    MyObjectBuilder_CubeBlockDefinition.MountPoint mpObj = addMPObjects[i];
 
                     Vector3 start = new Vector3(Vector2.Min(mpObj.Start, mpObj.End) + 0.001f, 0.0004f);
                     Vector3 end = new Vector3(Vector2.Max(mpObj.Start, mpObj.End) - 0.001f, -0.0004f);

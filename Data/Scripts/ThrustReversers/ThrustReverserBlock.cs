@@ -43,7 +43,7 @@ namespace Digi.ThrustReversers
                 if(!block.IsFunctional) // only works if it's at full integrity, power status is irelevant
                     return;
 
-                var grid = block.CubeGrid;
+                MyCubeGrid grid = block.CubeGrid;
 
                 if(grid.Physics == null || !grid.Physics.Enabled)
                     return;
@@ -53,19 +53,19 @@ namespace Digi.ThrustReversers
                     if(++linkSkip >= 60)
                     {
                         linkSkip = 0;
-                        var pos = grid.WorldToGridInteger(block.WorldMatrix.Translation + block.WorldMatrix.Backward * grid.GridSize);
-                        var slim = grid.GetCubeBlock(pos) as IMySlimBlock;
+                        Vector3I pos = grid.WorldToGridInteger(block.WorldMatrix.Translation + block.WorldMatrix.Backward * grid.GridSize);
+                        IMySlimBlock slim = grid.GetCubeBlock(pos) as IMySlimBlock;
+                        MyThrust thrust = slim?.FatBlock as MyThrust;
 
-                        if(slim != null && slim.FatBlock is MyThrust)
+                        if(thrust != null)
                         {
-                            var thrust = slim.FatBlock as MyThrust;
-                            var alignDot = Math.Round(Vector3.Dot(thrust.WorldMatrix.Backward, block.WorldMatrix.Backward), 1);
+                            double alignDot = Math.Round(Vector3.Dot(thrust.WorldMatrix.Backward, block.WorldMatrix.Backward), 1);
 
                             if(alignDot == 1 && ThrustReversersMod.Instance.LinkableThrusters.Contains(thrust.BlockDefinition.Id.SubtypeName))
                             {
                                 linkedThruster = thrust;
 
-                                var logic = linkedThruster.GameLogic.GetAs<ThrustBlock>();
+                                ThrustBlock logic = linkedThruster.GameLogic.GetAs<ThrustBlock>();
                                 logic.Reverser = this;
                             }
                         }
@@ -83,14 +83,14 @@ namespace Digi.ThrustReversers
                 if(!linkedThruster.IsWorking)
                     return;
 
-                var closedRatio = (block.FullyClosed ? 1 : (block.FullyOpen ? 0 : (1 - (block.OpenRatio / def.OpeningSequence[0].MaxOpen)))); // HACK OpenRatio fix
+                float closedRatio = (block.FullyClosed ? 1 : (block.FullyOpen ? 0 : (1 - (block.OpenRatio / def.OpeningSequence[0].MaxOpen)))); // HACK OpenRatio fix
 
                 ReflectedThrust = Math.Max(closedRatio - 0.4f, 0) / 0.6f;
 
                 if(ReflectedThrust > 0 && linkedThruster.CurrentStrength > 0)
                 {
-                    var force = linkedThruster.WorldMatrix.Forward * linkedThruster.BlockDefinition.ForceMagnitude * linkedThruster.CurrentStrength * 1.75 * ReflectedThrust;
-                    var forceAt = (ThrustReversersMod.Instance.RealisticThrustersInstalled ? linkedThruster.WorldMatrix.Translation : grid.Physics.CenterOfMassWorld); // Realistic Thrusters Mod support
+                    Vector3D force = linkedThruster.WorldMatrix.Forward * linkedThruster.BlockDefinition.ForceMagnitude * linkedThruster.CurrentStrength * 1.75 * ReflectedThrust;
+                    Vector3D forceAt = (ThrustReversersMod.Instance.RealisticThrustersInstalled ? linkedThruster.WorldMatrix.Translation : grid.Physics.CenterOfMassWorld); // Realistic Thrusters Mod support
                     grid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_FORCE, force, forceAt, null);
                 }
             }
